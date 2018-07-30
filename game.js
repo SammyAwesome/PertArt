@@ -25,6 +25,12 @@ var straight = false
 var lineM = undefined
 var xDos = undefined
 var yDos = undefined
+var functionChoice = "linear"
+
+
+var pA = .01
+var pB = 1
+var pC = 2
 ///////////////////////////////////////////////////////////////
 //                                                           //
 //                      EVENT RULES                          //
@@ -42,16 +48,29 @@ function onKeyStart(key) {
     if(key == 16){
       straight = true
     }
+    if(key==38){
+      pA = pA + .01
+    }
+    if(key==40){
+      pA = pA - .01
+    }
 }
 
 function CTG(value, type){
   if(type=="x"){
-    console.log(value)
      return (value - 450 - (screenWidth)/2)
   } else if(type == "y"){
-     return -1*(value)  - (screenWidth - 900) /2
+     return -1*(value)  - screenWidth/2 + 450
   }
 }
+function CTC(value, type){
+  if(type=="x"){
+    return (value + 450 + (screenWidth)/2)
+  }else if(type == "y"){
+     return -1*(value)  + (screenWidth - 900) /2
+  }
+}
+
 
 function onTouchStart(x, y, id){
   if(id==LEFT_MOUSE_BUTTON_ID){
@@ -74,8 +93,9 @@ function onTouchEnd(x, y, id){
 
       shouldDraw = false;
     }
-
+    selection()
   }
+
 }
 
 function makeEquation(){
@@ -91,6 +111,16 @@ function makeEquation(){
 
 }
 
+function drawParabola(){
+
+  if(functionChoice == "parabola"){
+    for(i = -10000; i < 10000; i++){
+      fillCircle(CTC(i/10, "x"), CTC(pA * (i/10)**2 + pB * (i/20) + pC, "y"), 2, makeColor(0,1,0))
+    }
+  }
+
+
+}
 
 
 function onMouseMove(x, y){
@@ -113,7 +143,29 @@ function drawLinear(){
   }
 }
 function selection(){
+  if(mouseX >=220 && mouseX <=560){
+    //in function section
+    if(mouseY >=100 && mouseY <200){
+      functionChoice = "line"
+    }
+    if(mouseY >=200 && mouseY <300){
+      functionChoice = "circle"
+    }
+    if(mouseY >=300 && mouseY <400){
+      functionChoice = "parabola"
+    }
+    if(mouseY >=400 && mouseY <500){
+      functionChoice = "sine wave"
+    }
+    if(mouseY >=500 && mouseY <600){
+      functionChoice = "exponential"
+    }
+    if(mouseY >=600 && mouseY <700){
+      functionChoice = "hyperbola"
+    }
 
+  }
+  console.log(functionChoice)
 }
 
 // Called 30 times or more per second
@@ -133,11 +185,22 @@ function onTick() {
     strokeLine(screenWidth-5,0,screenWidth-5,screenHeight,makeColor(0,.9,.9),10)
     strokeLine(900, screenHeight - 5, screenWidth, screenHeight - 5, makeColor(0,.9,.9), 10)
     fillText("Pert", 20, 50, makeColor(0,0,0), "50px Arial")
-    fillText("Art", 110, 50, makeColor(.5,0,10), " bold 50px Arial")
+    fillText("Art", 110, 50, makeColor(.5,0,1), " bold 50px Arial")
+    fillText("Functions", 250, 50, makeColor(.8,.2,.2), "45px Arial")
+    fillText("Line", 250, 150, makeColor(1,.2,.2), "45px Arial")
+    fillText("Circle", 250, 250, makeColor(.8,.2,.2), "45px Arial")
+    fillText("Parabola", 250, 350, makeColor(.8,.2,.2), "45px Arial")
+    fillText("Sine Wave", 250, 450, makeColor(.8,.2,.2), "45px Arial")
+    fillText("Exponential", 250, 550, makeColor(.8,.2,.2), "45px Arial")
+    fillText("Hyperbola", 250, 650, makeColor(.8,.2,.2), "45px Arial")
 
+
+
+    fillText("Options", 580, 50, makeColor(.2,.8,.2), "45px Arial")
 
     strokeRectangle(895,5,screenWidth-900,screenWidth-900, makeColor(0,.9,.9), 10)
     drawLinear()
+    drawParabola()
     makeEquation()
 
 }
