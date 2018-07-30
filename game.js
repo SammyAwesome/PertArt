@@ -12,7 +12,19 @@ var START_TIME = currentTime();
 
 // TODO: DECLARE your variables here
 var lastKeyCode;
+var storage = []
 
+var startX = undefined
+var startY = undefined
+var mouseX = undefined
+var mouseY = undefined
+
+var inCanvas = false
+var shouldDraw = false
+var straight = false
+var lineM = undefined
+var xDos = undefined
+var yDos = undefined
 ///////////////////////////////////////////////////////////////
 //                                                           //
 //                      EVENT RULES                          //
@@ -27,8 +39,82 @@ function onSetup() {
 // When a key is pushed
 function onKeyStart(key) {
     lastKeyCode = key;
+    if(key == 16){
+      straight = true
+    }
 }
 
+function CTG(value, type){
+  if(type=="x"){
+    console.log(value)
+     return (value - 450 - (screenWidth)/2)
+  } else if(type == "y"){
+     return -1*(value)  - (screenWidth - 900) /2
+  }
+}
+
+function onTouchStart(x, y, id){
+  if(id==LEFT_MOUSE_BUTTON_ID){
+    if(x >= 890 && y <= screenWidth - 890){
+      storage.push({x1:x,y1:y,x2:undefined,y2:undefined,type:"linear"})
+      startX = x;
+      startY = y;
+      inCanvas = true
+      shouldDraw = true
+    }else{
+      inCanvas = false
+    }
+  }
+}
+function onTouchEnd(x, y, id){
+  if(id==LEFT_MOUSE_BUTTON_ID){
+    if(inCanvas == true && x >= 900 && y <= screenWidth - 890){
+      storage[storage.length - 1].x2 = x;
+      storage[storage.length -1].y2 = y;
+
+      shouldDraw = false;
+    }
+
+  }
+}
+
+function makeEquation(){
+  if(storage.length >0){
+    lineM = round(-1000 * ((storage[storage.length - 1].y1) - (storage[storage.length - 1].y2))/((storage[storage.length - 1].x1) - (storage[storage.length - 1].x2))) / 1000
+    xDos = CTG(storage[storage.length - 1].x1, "x")
+    yDos = storage[storage.length - 1].y1 - (screenWidth - 900) /2
+
+    fillText("f(x) = " + (lineM) + "x" + " + "+ .01 * round(((xDos*-1) * lineM - yDos) *  100), 900 + (screenWidth - 900) / 2, screenHeight - 150, makeColor(.5,0,10), " bold 50px Arial", "center", "middle")
+    fillText("{" + "}", 900 + (screenWidth - 900) / 2, screenHeight - 100, makeColor(.5,0,10), " bold 50px Arial", "center", "middle")
+
+  }
+
+}
+
+
+
+function onMouseMove(x, y){
+  if(x >= 900 && y <= screenWidth - 890){
+    //maybe one day something will be in here...
+  }else{
+    shouldDraw = false
+  }
+  mouseX = x;
+  mouseY = y;
+  console.log(mouseX,mouseY,screenWidth - 900, 900)
+}
+function drawLinear(){
+  if(shouldDraw ==true){
+    strokeLine(startX, startY, mouseX, mouseY, makeColor(.3,.3,.3), 2)
+  }
+
+  for(i = 0; i < storage.length; i++){
+    strokeLine(storage[i].x1,storage[i].y1,storage[i].x2,storage[i].y2, makeColor(0,0,0), 2)
+  }
+}
+function selection(){
+
+}
 
 // Called 30 times or more per second
 function onTick() {
@@ -36,21 +122,25 @@ function onTick() {
     fillRectangle(0,0,screenWidth,screenHeight, makeColor(1,1,1))
     fillRectangle(0,0,220,80, makeColor(.8,.9,1))
 
-    strokeLine(screenWidth - (895/2), 0, screenWidth-(895/2),screenWidth-900,  makeColor(0,0,0), 6)
-    strokeRectangle(895,0,screenWidth-900,screenWidth-900, makeColor(0,.9,.9), 10)
-    fillText("Pert",
-             20,
-             55,
-             makeColor(0, 0, 0),
-             "50px Arial");
-             fillText("Art",
-                      110,
-                      55,
-                      makeColor(.5, 0, 1),
-                      "50px Arial");
+    strokeLine(screenWidth/2 + 445, 5, screenWidth/2 + 445,screenWidth-895,  makeColor(0,0,0), 6)
+    strokeLine(900, (screenWidth/2) - 455, screenWidth - 5,(screenWidth/2) - 455,  makeColor(0,0,0), 6)
+
+    strokeLine(0,80,900,80,makeColor(0,0,0),3)
+
+    strokeLine(220,0,220,screenHeight,makeColor(0,0,0),3)
+    strokeLine(560,0,560,screenHeight,makeColor(0,0,0),3)
+    strokeLine(895,0,895,screenHeight,makeColor(0,.9,.9),10)
+    strokeLine(screenWidth-5,0,screenWidth-5,screenHeight,makeColor(0,.9,.9),10)
+    strokeLine(900, screenHeight - 5, screenWidth, screenHeight - 5, makeColor(0,.9,.9), 10)
+    fillText("Pert", 20, 50, makeColor(0,0,0), "50px Arial")
+    fillText("Art", 110, 50, makeColor(.5,0,10), " bold 50px Arial")
+
+
+    strokeRectangle(895,5,screenWidth-900,screenWidth-900, makeColor(0,.9,.9), 10)
+    drawLinear()
+    makeEquation()
+
 }
-
-
 ///////////////////////////////////////////////////////////////
 //                                                           //
 //                      HELPER RULES                         //
