@@ -142,6 +142,13 @@ function drawLinear(){
     strokeLine(storage[i].x1,storage[i].y1,storage[i].x2,storage[i].y2, makeColor(0,0,0), 2)
   }
 }
+
+function drawCircle(){
+  if(shouldDraw == true){
+    //strokeCircle(startX, startY,mouseX,mouseY,makeColor(.3,.3,.3))
+  }
+}
+
 function selection(){
   if(mouseX >=220 && mouseX <=560){
     //in function section
@@ -202,6 +209,7 @@ function onTick() {
     drawLinear()
     drawParabola()
     makeEquation()
+    drawCircle()
 
 }
 ///////////////////////////////////////////////////////////////
