@@ -32,6 +32,12 @@ var pA = .01
 var pB = 1
 var pC = 2
 
+var sA
+var sB
+var sC
+var sD
+
+
 
 var xx1
 var xx2
@@ -79,7 +85,7 @@ function onKeyStart(key) {
 //from coordinate points to graph points
 function CTG(value, type){
   if(type=="x"){
-     return (value - 440 - (screenWidth)/2)
+     return (value - 445 - (screenWidth)/2)
   } else if(type == "y"){
      return -1*(value)  + screenWidth/2 - 455
   }
@@ -116,6 +122,12 @@ function onTouchStart(x, y, id){
         startY = y;
         inCanvas = true
         shouldDraw = true
+      } else if(functionChoice == "sine wave"){
+        storage.push({x1:x,y1:y,x2:undefined,y2:undefined,type:"sine wave"})
+        startX = x;
+        startY = y;
+        inCanvas = true
+        shouldDraw = true
       }
       currentF = storage.length - 1
     }else{
@@ -142,6 +154,11 @@ function onTouchEnd(x, y, id){
         storage[storage.length -1].y2 = y;
 
         shouldDraw = false;
+      } else if(functionChoice == "sine wave"){
+        storage[storage.length - 1].x2 = x;
+        storage[storage.length -1].y2 = y;
+
+        shouldDraw = false;
       }
     }
 
@@ -159,7 +176,13 @@ function makeEquation(){
         xDos = CTG(storage[currentF].x1, "x")
         yDos = storage[currentF].y1 - (screenWidth - 900) /2
         fillText("y = " + (lineM) + "x" + " + "+ .01 * round(((xDos*-1) * lineM - yDos) *  100), 900 + (screenWidth - 900) / 2, screenHeight - 150, makeColor(.5,0,10), " bold 50px Arial", "center", "middle")
-        fillText("{" + "}", 900 + (screenWidth - 900) / 2, screenHeight - 100, makeColor(.5,0,10), " bold 50px Arial", "center", "middle")
+        if(storage[currentF].x1 <= storage[currentF].x2){
+          fillText("{" + CTG(storage[currentF].x1, "x") + " < x < " + CTG(storage[currentF].x2, "x") + "}", 900 + (screenWidth - 900) / 2, screenHeight - 100, makeColor(.5,0,10), " bold 50px Arial", "center", "middle")
+
+        }else{
+          fillText("{" + CTG(storage[currentF].x2, "x") + " < x < " + CTG(storage[currentF].x1, "x") + "}", 900 + (screenWidth - 900) / 2, screenHeight - 100, makeColor(.5,0,10), " bold 50px Arial", "center", "middle")
+
+        }
 
       }else if(storage[currentF].type == "circle"){
         fillText("(x - " +   CTG(storage[currentF].x1, "x") +")^2  + (y - " +CTG(storage[currentF].y1, "y") + ")^2  = " + ((CTG(storage[currentF].x1, "x") - CTG(storage[currentF].x2, "x"))**2 +(CTG(storage[currentF].y1, "y") - CTG(storage[currentF].y2, "y"))**2), 900 + (screenWidth - 900) / 2, screenHeight - 150, makeColor(.5,0,10), " bold 50px Arial", "center", "middle")
@@ -169,6 +192,33 @@ function makeEquation(){
 
   }
 
+}
+var pi = 3.141526
+
+function drawSine(){
+  for(i = 0; i < storage.length; i++){
+    if(storage[i].type == "sine wave" && storage[i].x1 != storage[i].x2 && storage[i].x2 !=undefined){
+      for(j = -100; j < 100; j++){
+        console.log("hola")
+        if(CTC(j, "x") <screenWidth && CTC(j, "x") > 900 && CTC(pA * (j/10)**2 + pB * (j/20) + pC, "y") < screenWidth - 900 && CTC(pA * (j/10)**2 + pB * (j/20) + pC, "y") > 0){
+          sB = (2* pi) / ((CTG(storage[i].x2, "x") - CTG(storage[i].x1, "x"))* 2)
+
+          if(CTG(storage[i].y1) < CTG(storage[i].y2)){
+            sD = (CTG(storage[i].y2, "y") + CTG(storage[i].y1, "y")) / 2
+            sA = (CTG(storage[i].y2, "y") - CTG(storage[i].y1, "y")) / 2
+            sC = CTG(storage[i].y2, "y")
+          } else{
+            sD = (CTG(storage[i].y1, "y") + CTG(storage[i].y2, "y")) / 2
+            sA = (CTG(storage[i].y1, "y") - CTG(storage[i].y2, "y")) / 2
+            sC = CTG(storage[i].y1, "y")
+          }
+          console.log(sA, sB, sC, sD)
+
+            fillCircle(CTC(j, "x"),CTC((sA*cos(sB*((j)-sC)) + sD),"y"), 2, makeColor(1,0,1))
+        }
+      }
+    }
+  }
 }
 
 function drawParabola(){
@@ -181,15 +231,16 @@ function drawParabola(){
         xx2 = CTG(storage[i].x2, "x")
         yy1 = CTG(storage[i].y1, "y")
         yy2 = CTG(storage[i].y2, "y")
-        pB = 30
-        pC = 340
-    //    pB =(yy1 - yy2 - (pA*(xx1**2)) + (pA*(xx2**2))) / (xx1 - xx2)
+
+        console.log(CTG(storage[i].x1, "x"),CTG(storage[i].x2, "x"),CTG(storage[i].y1, "y"),CTG(storage[i].y2, "y"))
+        //pB = 10
+      //  pC = 34
+        pB =(yy1 - yy2 - (pA*(xx1**2)) + (pA*(xx2**2))) / (xx1 - xx2)
       //  pB = (CTG(storage[i].y1, "y") - CTG(storage[i].y2, "y") - pA * ((CTG(storage[i].x1, "x"))**2) + pA * ((CTG(storage[i].x2, "x"))**2)) / (CTG(storage[i].x1, "x") - CTG(storage[i].x2, "x"))
-      //  pC = (CTG(storage[i].y2, "y") - pA * ((CTG(storage[i].x1, "x"))**2) - pB*(CTG(storage[i].x2, "x")))
-      //  pB = 100
-      //  pC = 100
+        pC = (CTG(storage[i].y2, "y") - pA * ((CTG(storage[i].x1, "x"))**2) - pB*(CTG(storage[i].x2, "x")))
+
         for(j = -10000; j < 10000; j++){
-          console.log(pA, pB, pC, CTG(storage[i].x1, "x"), CTG(storage[i].x2,"x"))
+          //console.log(pA, pB, pC, CTG(storage[i].x1, "x"), CTG(storage[i].x2,"x"))
           if(CTC(j/10, "x") <screenWidth && CTC(j/10, "x") > 900 && CTC(pA * (j/10)**2 + pB * (j/20) + pC, "y") < screenWidth - 900 && CTC(pA * (j/10)**2 + pB * (j/20) + pC, "y") > 0){
             fillCircle(CTC(j/10, "x"), CTC(pA * (j/10)**2 + pB * (j/20) + pC, "y"), 2, makeColor(0,1,0))
 
@@ -308,6 +359,7 @@ function onTick() {
     makeEquation()
     drawCircle()
     drawPlaced()
+    drawSine()
 }
 ///////////////////////////////////////////////////////////////
 //                                                           //
