@@ -25,8 +25,8 @@ var straight = false
 var lineM = undefined
 var xDos = undefined
 var yDos = undefined
-var functionChoice = "linear"
-
+var functionChoice = "line"
+var currentF = 0
 
 var pA = .01
 var pB = 1
@@ -54,15 +54,31 @@ function onKeyStart(key) {
     if(key==40){
       pA = pA - .01
     }
+
+
+    if(key==39){
+      currentF ++
+      if(currentF > storage.length - 1){
+        currentF = 0
+      }
+    }
+    if(key==37){
+      currentF--
+      if(currentF < 0){
+        currentF = storage.length - 1
+      }
+    }
 }
 
+//from coordinate points to graph points
 function CTG(value, type){
   if(type=="x"){
-     return (value - 450 - (screenWidth)/2)
+     return (value - 440 - (screenWidth)/2)
   } else if(type == "y"){
      return -1*(value)  - screenWidth/2 + 450
   }
 }
+//from graph points to coordinate points
 function CTC(value, type){
   if(type=="x"){
     return (value + 450 + (screenWidth)/2)
@@ -75,11 +91,20 @@ function CTC(value, type){
 function onTouchStart(x, y, id){
   if(id==LEFT_MOUSE_BUTTON_ID){
     if(x >= 890 && y <= screenWidth - 890){
-      storage.push({x1:x,y1:y,x2:undefined,y2:undefined,type:"linear"})
-      startX = x;
-      startY = y;
-      inCanvas = true
-      shouldDraw = true
+      if(functionChoice == "line"){
+        storage.push({x1:x,y1:y,x2:undefined,y2:undefined,type:"linear"})
+        startX = x;
+        startY = y;
+        inCanvas = true
+        shouldDraw = true
+      } else if(functionChoice == "circle"){
+        storage.push({x1:x,y1:y,x2:undefined,y2:undefined,type:"circle"})
+        startX = x;
+        startY = y;
+        inCanvas = true
+        shouldDraw = true
+      }
+      currentF = storage.length - 1
     }else{
       inCanvas = false
     }
@@ -88,11 +113,21 @@ function onTouchStart(x, y, id){
 function onTouchEnd(x, y, id){
   if(id==LEFT_MOUSE_BUTTON_ID){
     if(inCanvas == true && x >= 900 && y <= screenWidth - 890){
-      storage[storage.length - 1].x2 = x;
-      storage[storage.length -1].y2 = y;
+      if(functionChoice == "line"){
 
-      shouldDraw = false;
+        storage[storage.length - 1].x2 = x;
+        storage[storage.length -1].y2 = y;
+
+        shouldDraw = false;
+      } else if(functionChoice == "circle"){
+        storage[storage.length - 1].x2 = x;
+        storage[storage.length -1].y2 = y;
+
+        shouldDraw = false;
+      }
     }
+
+
     selection()
   }
 
@@ -100,12 +135,19 @@ function onTouchEnd(x, y, id){
 
 function makeEquation(){
   if(storage.length >0){
-    lineM = round(-1000 * ((storage[storage.length - 1].y1) - (storage[storage.length - 1].y2))/((storage[storage.length - 1].x1) - (storage[storage.length - 1].x2))) / 1000
-    xDos = CTG(storage[storage.length - 1].x1, "x")
-    yDos = storage[storage.length - 1].y1 - (screenWidth - 900) /2
+    console.log("hihihi")
+      if(storage[currentF].type == "linear"){
+        lineM = round(-1000 * ((storage[currentF].y1) - (storage[currentF].y2))/((storage[currentF].x1) - (storage[currentF].x2))) / 1000
+        xDos = CTG(storage[currentF].x1, "x")
+        yDos = storage[currentF].y1 - (screenWidth - 900) /2
+        fillText("y = " + (lineM) + "x" + " + "+ .01 * round(((xDos*-1) * lineM - yDos) *  100), 900 + (screenWidth - 900) / 2, screenHeight - 150, makeColor(.5,0,10), " bold 50px Arial", "center", "middle")
+        fillText("{" + "}", 900 + (screenWidth - 900) / 2, screenHeight - 100, makeColor(.5,0,10), " bold 50px Arial", "center", "middle")
 
-    fillText("f(x) = " + (lineM) + "x" + " + "+ .01 * round(((xDos*-1) * lineM - yDos) *  100), 900 + (screenWidth - 900) / 2, screenHeight - 150, makeColor(.5,0,10), " bold 50px Arial", "center", "middle")
-    fillText("{" + "}", 900 + (screenWidth - 900) / 2, screenHeight - 100, makeColor(.5,0,10), " bold 50px Arial", "center", "middle")
+      }else if(storage[currentF].type == "circle"){
+        fillText("(x - " +   CTG(storage[currentF].x1, "x") +")^2  + (y + " +CTG(storage[currentF].y1, "y") + ")^2  = " + ((CTG(storage[currentF].x1, "x") - CTG(storage[currentF].x2, "x"))**2 +(CTG(storage[currentF].y1, "y") - CTG(storage[currentF].y2, "y"))**2), 900 + (screenWidth - 900) / 2, screenHeight - 150, makeColor(.5,0,10), " bold 50px Arial", "center", "middle")
+
+
+      }
 
   }
 
@@ -131,23 +173,35 @@ function onMouseMove(x, y){
   }
   mouseX = x;
   mouseY = y;
-  console.log(mouseX,mouseY,screenWidth - 900, 900)
 }
 function drawLinear(){
   if(shouldDraw ==true){
-    strokeLine(startX, startY, mouseX, mouseY, makeColor(.3,.3,.3), 2)
-  }
-
-  for(i = 0; i < storage.length; i++){
-    strokeLine(storage[i].x1,storage[i].y1,storage[i].x2,storage[i].y2, makeColor(0,0,0), 2)
+    if(functionChoice == "line"){
+      strokeLine(startX, startY, mouseX, mouseY, makeColor(.3,.3,.3), 2)
+    }
   }
 }
+
 
 function drawCircle(){
   if(shouldDraw == true){
-    //strokeCircle(startX, startY,mouseX,mouseY,makeColor(.3,.3,.3))
+      if(functionChoice == "circle"){
+        strokeCircle(startX, startY, sqrt((startX - mouseX)**2 +(startY - mouseY)**2),makeColor(.3,.3,.3), 2)
+
+      }
   }
 }
+
+function drawPlaced(){
+  for(i = 0; i < storage.length; i ++) {
+    if(storage[i].type == "linear"){
+      strokeLine(storage[i].x1,storage[i].y1,storage[i].x2,storage[i].y2, makeColor(0,0,0), 2)
+    } else if(storage[i].type == "circle"){
+      strokeCircle(storage[i].x1, storage[i].y1, sqrt((storage[i].x1 - storage[i].x2)**2 +(storage[i].y1 - storage[i].y2)**2),makeColor(.3,.3,.3), 2)
+    }
+  }
+}
+
 
 function selection(){
   if(mouseX >=220 && mouseX <=560){
@@ -177,6 +231,8 @@ function selection(){
 
 // Called 30 times or more per second
 function onTick() {
+  console.log(currentF)
+  console.log(storage.length)
     // Some sample drawing
     fillRectangle(0,0,screenWidth,screenHeight, makeColor(1,1,1))
     fillRectangle(0,0,220,80, makeColor(.8,.9,1))
@@ -210,7 +266,7 @@ function onTick() {
     drawParabola()
     makeEquation()
     drawCircle()
-
+    drawPlaced()
 }
 ///////////////////////////////////////////////////////////////
 //                                                           //
