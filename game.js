@@ -31,6 +31,12 @@ var currentF = 0
 var pA = .01
 var pB = 1
 var pC = 2
+
+
+var xx1
+var xx2
+var yy1
+var yy2
 ///////////////////////////////////////////////////////////////
 //                                                           //
 //                      EVENT RULES                          //
@@ -75,15 +81,16 @@ function CTG(value, type){
   if(type=="x"){
      return (value - 440 - (screenWidth)/2)
   } else if(type == "y"){
-     return -1*(value)  - screenWidth/2 + 450
+     return -1*(value)  + screenWidth/2 - 455
   }
 }
 //from graph points to coordinate points
 function CTC(value, type){
   if(type=="x"){
-    return (value + 450 + (screenWidth)/2)
+    return (value + 445 + (screenWidth)/2)
   }else if(type == "y"){
-     return -1*(value)  + (screenWidth - 900) /2
+
+     return ((screenWidth-910)/2 -value)
   }
 }
 
@@ -99,6 +106,12 @@ function onTouchStart(x, y, id){
         shouldDraw = true
       } else if(functionChoice == "circle"){
         storage.push({x1:x,y1:y,x2:undefined,y2:undefined,type:"circle"})
+        startX = x;
+        startY = y;
+        inCanvas = true
+        shouldDraw = true
+      } else if(functionChoice == "parabola"){
+        storage.push({x1:x,y1:y,x2:undefined,y2:undefined,type:"parabola"})
         startX = x;
         startY = y;
         inCanvas = true
@@ -124,6 +137,11 @@ function onTouchEnd(x, y, id){
         storage[storage.length -1].y2 = y;
 
         shouldDraw = false;
+      } else if(functionChoice == "parabola"){
+        storage[storage.length - 1].x2 = x;
+        storage[storage.length -1].y2 = y;
+
+        shouldDraw = false;
       }
     }
 
@@ -135,7 +153,7 @@ function onTouchEnd(x, y, id){
 
 function makeEquation(){
   if(storage.length >0){
-    console.log("hihihi")
+//    console.log("hihihi")
       if(storage[currentF].type == "linear"){
         lineM = round(-1000 * ((storage[currentF].y1) - (storage[currentF].y2))/((storage[currentF].x1) - (storage[currentF].x2))) / 1000
         xDos = CTG(storage[currentF].x1, "x")
@@ -144,7 +162,7 @@ function makeEquation(){
         fillText("{" + "}", 900 + (screenWidth - 900) / 2, screenHeight - 100, makeColor(.5,0,10), " bold 50px Arial", "center", "middle")
 
       }else if(storage[currentF].type == "circle"){
-        fillText("(x - " +   CTG(storage[currentF].x1, "x") +")^2  + (y + " +CTG(storage[currentF].y1, "y") + ")^2  = " + ((CTG(storage[currentF].x1, "x") - CTG(storage[currentF].x2, "x"))**2 +(CTG(storage[currentF].y1, "y") - CTG(storage[currentF].y2, "y"))**2), 900 + (screenWidth - 900) / 2, screenHeight - 150, makeColor(.5,0,10), " bold 50px Arial", "center", "middle")
+        fillText("(x - " +   CTG(storage[currentF].x1, "x") +")^2  + (y - " +CTG(storage[currentF].y1, "y") + ")^2  = " + ((CTG(storage[currentF].x1, "x") - CTG(storage[currentF].x2, "x"))**2 +(CTG(storage[currentF].y1, "y") - CTG(storage[currentF].y2, "y"))**2), 900 + (screenWidth - 900) / 2, screenHeight - 150, makeColor(.5,0,10), " bold 50px Arial", "center", "middle")
 
 
       }
@@ -156,9 +174,31 @@ function makeEquation(){
 function drawParabola(){
 
   if(functionChoice == "parabola"){
-    for(i = -10000; i < 10000; i++){
-      fillCircle(CTC(i/10, "x"), CTC(pA * (i/10)**2 + pB * (i/20) + pC, "y"), 2, makeColor(0,1,0))
+    for(i = 0; i < storage.length; i++){
+      if(storage[i].type == "parabola" && storage[i].x1 != storage[i].x2 && storage[i].x2 !=undefined){
+
+        xx1 = CTG(storage[i].x1, "x")
+        xx2 = CTG(storage[i].x2, "x")
+        yy1 = CTG(storage[i].y1, "y")
+        yy2 = CTG(storage[i].y2, "y")
+        pB = 30
+        pC = 340
+    //    pB =(yy1 - yy2 - (pA*(xx1**2)) + (pA*(xx2**2))) / (xx1 - xx2)
+      //  pB = (CTG(storage[i].y1, "y") - CTG(storage[i].y2, "y") - pA * ((CTG(storage[i].x1, "x"))**2) + pA * ((CTG(storage[i].x2, "x"))**2)) / (CTG(storage[i].x1, "x") - CTG(storage[i].x2, "x"))
+      //  pC = (CTG(storage[i].y2, "y") - pA * ((CTG(storage[i].x1, "x"))**2) - pB*(CTG(storage[i].x2, "x")))
+      //  pB = 100
+      //  pC = 100
+        for(j = -10000; j < 10000; j++){
+          console.log(pA, pB, pC, CTG(storage[i].x1, "x"), CTG(storage[i].x2,"x"))
+          if(CTC(j/10, "x") <screenWidth && CTC(j/10, "x") > 900 && CTC(pA * (j/10)**2 + pB * (j/20) + pC, "y") < screenWidth - 900 && CTC(pA * (j/10)**2 + pB * (j/20) + pC, "y") > 0){
+            fillCircle(CTC(j/10, "x"), CTC(pA * (j/10)**2 + pB * (j/20) + pC, "y"), 2, makeColor(0,1,0))
+
+          }
+        }
+      }
+
     }
+
   }
 
 
@@ -231,8 +271,9 @@ function selection(){
 
 // Called 30 times or more per second
 function onTick() {
-  console.log(currentF)
-  console.log(storage.length)
+//  console.log(510, CTG(510, "y"))
+//  console.log(currentF)
+  //console.log(storage.length)
     // Some sample drawing
     fillRectangle(0,0,screenWidth,screenHeight, makeColor(1,1,1))
     fillRectangle(0,0,220,80, makeColor(.8,.9,1))
